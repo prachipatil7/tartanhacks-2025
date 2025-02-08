@@ -1,26 +1,50 @@
+/* Import Bubble Font */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
+/* Background video styling */
+.background-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the video scales correctly */
+  z-index:-1;
+  filter: brightness(70%); /* Optional: dim the video slightly for readability */
+}
+
 .landing-container {
-    text-align: center;
-    padding: 100px;
-    background: linear-gradient(to right, #ff9a9e, #fad0c4);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
+  text-align: center;
+  padding: 10px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1; /* Ensure the content appears above the video */
+  position: relative; /* Ensure proper layering */
+  color: white;/* Contrast text against video */
+}
+
   
-  h1 {
-    font-size: 3rem;
+h1 {
+    font-size: 4rem;
     color: white;
-  }
+    font-family: 'Fredoka One', cursive; /* Apply bubbly font */
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    -webkit-text-stroke: 2px #ff4081; /* Dark pink border */
+    text-stroke: 2px #ff4081; /* Fallback for some browsers */
+}
   
-  p {
-    font-size: 1.2rem;
+p {
+    font-size: 1.5rem;
     color: white;
+    font-family: 'Fredoka One', cursive; /* Apply bubbly font */
     margin-bottom: 20px;
-  }
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
   
-  .start-button {
+.start-button {
     padding: 10px 20px;
     font-size: 1.5rem;
     border: none;
@@ -29,32 +53,35 @@
     cursor: pointer;
     border-radius: 5px;
     transition: 0.3s;
-  }
+    font-family: 'Fredoka One', cursive; /* Apply bubbly font */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
   
-  .start-button:hover {
+.start-button:hover {
     background-color: #ff4081;
-  }
+}
   
-  .container {
+.container {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 50px;
-  }
+}
   
-  .left-content {
+.left-content {
     flex: 1;
     text-align: center;
-  }
+}
   
-  .gif-container {
+.gif-container {
     position: fixed;
-    right: 20px;
+    right: 0px;
     bottom: 20px;
-    width: 150px;  /* Adjust size */
-  }
+    width: 250px;  /* Adjust size */
+    z-index: 2;
+}
   
-  .side-gif {
+.side-gif {
     width: 100%; 
     height: auto;
-  }
+}
