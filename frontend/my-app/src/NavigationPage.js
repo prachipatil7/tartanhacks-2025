@@ -2,6 +2,229 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { GoogleMap, Autocomplete, DirectionsRenderer, Marker } from "@react-google-maps/api";
 import { LoadScript } from "@react-google-maps/api";
 
+// Define the custom style object at the top of your file
+const mapStyles = [
+    {
+        "featureType": "administrative",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#eae6e7"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape.man_made",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#eaeaea"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape.man_made",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "color": "#e0dede"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#e0e0e0"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#d6caca"
+            },
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "labels.icon",
+        "stylers": [
+            {
+                "color": "#f6c6dc"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.attraction",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.business",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.government",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.medical",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.park",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.place_of_worship",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.school",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#f6c6dc"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#f6c6dc"
+            },
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    },
+    {
+        "featureType": "transit",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    },
+    {
+        "featureType": "transit",
+        "elementType": "labels.icon",
+        "stylers": [
+            {
+                "hue": "#ff0000"
+            },
+            {
+                "saturation": "-100"
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#613659"
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    }
+]
+
 const mapContainerStyle = {
   width: "100vw",
   height: "100vh",
@@ -162,7 +385,7 @@ const NavigationPage = () => {
   }, []);
 
   // Get the custom pink car icon
-  const getPinkCarIcon = useCallback(() => {
+  const getCarIcon = useCallback(() => {
     if (
       window.google &&
       window.google.maps &&
@@ -170,7 +393,8 @@ const NavigationPage = () => {
       typeof window.google.maps.Point === "function"
     ) {
       return {
-        url: "/media/pink-car.svg", // Path to your pink car icon
+        url: "/media/car-steering-wheel-svgrepo-com.svg",
+        //url: "/media/car.svg", // Path to your pink car icon
         scaledSize: new window.google.maps.Size(40, 40),
         anchor: new window.google.maps.Point(20, 20),
       };
@@ -192,15 +416,26 @@ const NavigationPage = () => {
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         zoom={14}
+        // options={{
+        //     styles: mapStyles,  // Apply custom styles here
+        //   }}
         center={currentLocation}
-        options={{ mapTypeId: mapType }}
+        options={{ mapTypeId: mapType, styles: mapStyles, minZoom: 1, maxZoom: 20, }}
         onLoad={(map) => {
           mapRef.current = map;
         }}
+        
       >
         {directions && <DirectionsRenderer directions={directions} />}
-        {navigationStarted && currentLocation && getPinkCarIcon() && (
-          <Marker position={currentLocation} icon={getPinkCarIcon()} />
+        {navigationStarted && currentLocation && getCarIcon() && (
+          <Marker position={currentLocation}             icon={{
+            // Instead of an image, use a CSS animated div
+            url: "/media/car-steering-wheel-svgrepo-com.svg",
+            //url: "/media/car.svg", // Path to your pink car icon
+            scaledSize: new window.google.maps.Size(40, 40),
+            anchor: new window.google.maps.Point(20, 20),
+          }}
+        />
         )}
       </GoogleMap>
 

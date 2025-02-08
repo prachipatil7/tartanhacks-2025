@@ -17,7 +17,7 @@
   
   button {
     padding: 10px 15px;
-    font-family: fantasy;
+    font-family: optima;
     font-size: 1rem;
     background: #ff69b4;
     color: white;
@@ -28,7 +28,7 @@
 
   
   .info {
-    font-family: fantasy;
+    font-family: optima;
     padding: 10px 15px;
     font-size: 1rem;
     background: rgba(255, 105, 180, 0.8);  /* Semi-transparent pink background */
@@ -43,4 +43,34 @@
     z-index: 10;
   }
   
+
+  .pulsing-circle {
+    animation: pulse 2s infinite ease-in-out;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(0.5);
+      opacity: 0.3;
+      fill: #8e24aa; /* Dark purple */
+    }
+    50% {
+      transform: scale(1.2); /* Slightly enlarge */
+      opacity: 0.6;
+      fill: #ff4081; /* Neon pink/purple */
+    }
+    100% {
+      transform: scale(0.5);
+      opacity: 0.3;
+      fill: #8e24aa; /* Dark purple */
+    }
+  }
+  
+  /* Additional class to apply the pulse effect to the circle */
+  .pulse-circle {
+    width: 50px;
+    height: 50px;
+    background-color:#ff69b4;
+    animation: pulse 5s infinite ;
+  }
   
