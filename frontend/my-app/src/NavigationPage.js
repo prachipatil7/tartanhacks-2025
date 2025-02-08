@@ -240,6 +240,8 @@ const NavigationPage = () => {
   const [distance, setDistance] = useState(null);
   const [mapType, setMapType] = useState("roadmap");
   const [navigationStarted, setNavigationStarted] = useState(false);
+  const [stops, setStops] = useState([]);
+
 
   const mapRef = useRef(null);
   const intervalRef = useRef(null);
@@ -322,6 +324,17 @@ const NavigationPage = () => {
       setDestination(autocomplete.getPlace().formatted_address);
     }
   };
+
+//   const addStop = () => {
+//     setStops([...stops, ""]);
+//   };
+
+//     // Updates the value of a specific stop based on user input
+//    const handleStopChange = (e, index) => {
+//     const newStops = [...stops];
+//     newStops[index] = e.target.value;
+//     setStops(newStops);
+//     };
 
   // Start navigation: fetch directions and send details to backend
   const startNavigation = async () => {
