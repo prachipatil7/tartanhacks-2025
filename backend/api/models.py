@@ -7,6 +7,7 @@ from .maps import (
     Location,
     Step,
     extract_turn_landmarks
+
 )
 from .t2v import synthesize_text
 
@@ -34,6 +35,7 @@ class TripStatus(BaseModel):
                 return synthesize_text(step.instructions)
             else:
                 return synthesize_text(step.instructions + "when you see " + step.landmark_name)
+
         else:
             return None
 
@@ -45,10 +47,13 @@ class TripStatus(BaseModel):
         self.route = get_all_route_steps(directions)
 
     def add_stop(self, keyword, location_type):
-        directions = create_route_with_stop(
+
+        directions, stop_name = create_route_with_stop(
             self.curr, self.dest, keyword, location_type
         )
         route = directions["legs"][0]
         self.duration = route["duration"]["text"]
         self.distance = route["distance"]["text"]
         self.route = get_all_route_steps(directions)
+
+        return stop_name

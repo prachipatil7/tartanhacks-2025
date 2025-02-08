@@ -107,7 +107,8 @@ def create_route_with_stop(start, end, keyword, location_type):
         mode="driving",
     )
 
-    return final_route[0]
+
+    return final_route[0], best_stop["displayName"]["text"]
 
 
 # get route dict, set alternatives = True to get alt routes

@@ -3,13 +3,12 @@ from google.cloud import texttospeech
 
 
 # Set up authentication
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "REPLACE"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ.get("GOOGLE_CREDS_PATH")
 
 
 def synthesize_text(text):
     """Synthesizes speech from the input string of text."""
-    # print(text)
-    # text = "Hello there girlypop"
+
     client = texttospeech.TextToSpeechClient()
 
     input_text = texttospeech.SynthesisInput(text=text)
@@ -34,12 +33,6 @@ def synthesize_text(text):
     if not response.audio_content:
         print("Error: No audio content received!")
         return
-
-    # Save output
-    # output_path = "/Users/AnuranjanAnand/tartanhacks-2025/files/output.mp3"
-    # with open(output_path, "wb") as out:
-    #     out.write(response.audio_content)
-    #     print(f"Audio content written to file: {output_path}")
 
     return response.audio_content
 

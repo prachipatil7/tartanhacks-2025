@@ -6,9 +6,42 @@ from .models import TripStatus
 from llm.process import process_user_speech
 from .models import TripStatus
 from .t2v import synthesize_text
+import asyncio
+from .maps import Location
+import json
 
 app = FastAPI()
-current_status = None
+
+
+class GlobalState:
+    def __init__(self):
+        self.current_status = None
+        self.lock = asyncio.Lock()  # To prevent race conditions
+        self.messages = [
+            {
+                "role": "system",
+                "content": "You are a fun driving bestie. If you are asked a question about driving, you will use one of the tool calls to find the answer. Or, you will summarize the trip information as broadly as possible without repeating it word for word",
+            }
+        ]
+
+    async def set_status(self, status: TripStatus):
+        async with self.lock:
+            self.current_status = status
+
+    async def get_status(self):
+        async with self.lock:
+            return self.current_status
+
+    async def set_messages(self, new_messages):
+        async with self.lock:
+            self.messages = new_messages
+
+    async def get_messages(self):
+        async with self.lock:
+            return self.messages
+
+
+state = GlobalState()
 
 # CORS configuration
 app.add_middleware(
@@ -25,19 +58,8 @@ app.add_middleware(
 # Create an endpoint to handle POST requests at /destination
 @app.post("/destination")
 async def handle_destination(data: TripStatus):
-    # Extract the data from the request body
-    start = data.start
-    dest = data.dest
-    duration = data.duration
-    distance = data.distance
+    await state.set_status(data)
 
-    # You can print this or save it to a database
-    print("Start:", start)
-    print("Destination:", dest)
-    print("Duration:", duration)
-    print("Distance:", distance)
-
-    # Respond with a success message
     return JSONResponse(
         content={"status": "success", "message": "Data received successfully!"},
         status_code=200,
@@ -49,16 +71,36 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:
         data = await websocket.receive_text()
-        response = process_user_speech(data)
+        current_status = await state.get_status()
+        if current_status is None:
+            continue
+        current_status.update_status()
+        messages = await state.get_messages()
+        response, new_messages, status = process_user_speech(
+            data, current_status, messages
+        )
+        await state.set_messages(new_messages)
         sound_bytes = synthesize_text(response)
         await websocket.send_bytes(sound_bytes)
+        await state.set_status(status)
+        _ = await websocket.receive_text()
 
 
 @app.websocket("/navigation")
 async def websocket_endpoint(websocket: WebSocket):
+    global current_status
     await websocket.accept()
     while True:
         data = await websocket.receive_text()
-        # response = update_status(data, current_trip)
-        # if response
-        await websocket.send_text(data)
+
+        current_status = await state.get_status()
+        if current_status is None:
+            continue
+
+        data = json.loads(data)
+
+        current_status.curr = Location(**data)
+        response = current_status.check_route_instruction()
+        await state.set_status(current_status)
+        if response:
+            await websocket.send_bytes(response)
