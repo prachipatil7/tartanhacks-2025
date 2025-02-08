@@ -35,3 +35,26 @@
     background-color: #ff4081;
   }
   
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 50px;
+  }
+  
+  .left-content {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .gif-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 150px;  /* Adjust size */
+  }
+  
+  .side-gif {
+    width: 100%; 
+    height: auto;
+  }
