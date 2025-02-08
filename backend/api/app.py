@@ -6,10 +6,28 @@ from .models import TripStatus
 from llm.process import process_user_speech
 from .models import TripStatus
 from .t2v import synthesize_text
+import asyncio
+from .maps import Location
 import json
 
 app = FastAPI()
-current_status = None
+
+
+class GlobalState:
+    def __init__(self):
+        self.current_status = None
+        self.lock = asyncio.Lock()  # To prevent race conditions
+
+    async def set_status(self, status: TripStatus):
+        async with self.lock:
+            self.current_status = status
+
+    async def get_status(self):
+        async with self.lock:
+            return self.current_status
+
+
+state = GlobalState()
 
 # CORS configuration
 app.add_middleware(
@@ -26,7 +44,7 @@ app.add_middleware(
 # Create an endpoint to handle POST requests at /destination
 @app.post("/destination")
 async def handle_destination(data: TripStatus):
-    current_status = data
+    await state.set_status(data)
 
     return JSONResponse(
         content={"status": "success", "message": "Data received successfully!"},
@@ -39,6 +57,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:
         data = await websocket.receive_text()
+        current_status = state.get_status()
         response = process_user_speech(data, current_status)
         sound_bytes = synthesize_text(response)
         await websocket.send_bytes(sound_bytes)
@@ -46,23 +65,16 @@ async def websocket_endpoint(websocket: WebSocket):
 
 @app.websocket("/navigation")
 async def websocket_endpoint(websocket: WebSocket):
+    global current_status
     await websocket.accept()
     while True:
-        message = await websocket.recv()
-        try:
-            data = json.loads(message)
-            if isinstance(data, dict):
-                print("Received dictionary:", data)
-        except json.JSONDecodeError:
-            print("Received message is not valid JSON")
-
-        response = update_status(data, current_status)
-        # if response == True:
-        # response = process_navigation_prompt(data, current_status)
-        # sound_bytes = synthesize_text(response)
-        # await websocket.send_bytes(sound_bytes)
-        await websocket.send_text(data)
-
-
-def update_status(new, curr):
-    pass
+        data = await websocket.receive_text()
+        data = json.loads(data)
+        current_status = await state.get_status()
+        if current_status is None:
+            continue
+        current_status.curr = Location(**data)
+        response = current_status.check_route_instruction()
+        state.set_status(current_status)
+        if response:
+            await websocket.send_bytes(response)

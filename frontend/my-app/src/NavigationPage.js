@@ -2,10 +2,29 @@ import React, { useState, useEffect } from "react";
 import { GoogleMap, Autocomplete, DirectionsRenderer } from "@react-google-maps/api";
 import { LoadScript } from "@react-google-maps/api";
 
+
 const mapContainerStyle = {
   width: "100vw",
   height: "100vh",
 };
+
+const playOnEvent = (event) => {
+  const audioData = event.data;
+
+  // Convert the raw data into a Blob, specifying the correct MIME type
+  const audioBlob = new Blob([audioData], { type: "audio/wav" });
+  const audioUrl = URL.createObjectURL(audioBlob);
+
+  // Create a new Audio object and play the sound
+  const audio = new Audio(audioUrl);
+  audio.play()
+    .then(() => {
+      console.log("Playing received audio...");
+    })
+    .catch((error) => {
+      console.error("Error playing audio:", error);
+    });
+}
 
 const NavigationPage = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -15,7 +34,49 @@ const NavigationPage = () => {
   const [autocomplete, setAutocomplete] = useState(null);
 
   let socket;
+  let navsocket;
   let recognition;
+
+  useEffect(() => {
+    setupNavSocket();
+
+    const sendCoordinatesToServer = (latt, long) => {
+      const data = { lat: latt, lng: long }
+      navsocket.send(JSON.stringify(data));
+    }
+
+    // Set up an interval to run every 2 seconds
+    setInterval(() => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log(
+            "Location every 1 sec",
+            position.coords.latitude,
+            position.coords.longitude
+          );
+          sendCoordinatesToServer(position.coords.latitude, position.coords.longitude)
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        }
+      );
+    }, 1000);
+    // return () => clearInterval(intervalId);
+  }, [navsocket]);
+
+
+  function setupNavSocket() {
+    navsocket = new WebSocket("http://127.0.0.1:8000/navigation");
+
+    navsocket.onopen = () => {
+      console.log("NavSocket connection established");
+    };
+
+    navsocket.onmessage = (event) => playOnEvent(event);
+
+
+
+  }
 
   function setupAudioCapture() {
     socket = new WebSocket("http://127.0.0.1:8000/ws");
@@ -24,23 +85,7 @@ const NavigationPage = () => {
       console.log("WebSocket connection established");
     };
 
-    socket.onmessage = (event) => {
-      const audioData = event.data;
-
-      // Convert the raw data into a Blob, specifying the correct MIME type
-      const audioBlob = new Blob([audioData], { type: "audio/wav" });
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      // Create a new Audio object and play the sound
-      const audio = new Audio(audioUrl);
-      audio.play()
-        .then(() => {
-          console.log("Playing received audio...");
-        })
-        .catch((error) => {
-          console.error("Error playing audio:", error);
-        });
-    };
+    socket.onmessage = (event) => playOnEvent(event);
 
     function sendTranscriptToServer(transcript) {
       socket.send(transcript);
@@ -83,7 +128,8 @@ const NavigationPage = () => {
 
   // Function to get formatted address from lat, lng
   const getFormattedAddress = async (lat, lng) => {
-    const API_KEY = "REPLACE"; // Replace with actual API Key
+    const API_KEY = process.env.REACT_APP_GOOGLE_KEY; // Replace with actual API Key
+    console.log(API_KEY)
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`;
 
     try {
@@ -136,6 +182,10 @@ const NavigationPage = () => {
               lat: currentLocation.lat,
               lng: currentLocation.lng
             },
+            curr: {
+              lat: currentLocation.lat,
+              lng: currentLocation.lng
+            },
             dest: {
               lat: result.routes[0].legs[0].end_location.lat(),
               lng: result.routes[0].legs[0].end_location.lng(),
@@ -180,7 +230,7 @@ const NavigationPage = () => {
 
   return (
     //THIS IS WHERE YOU ADD THE API KEY  <LoadScript googleMapsApiKey="XXXXXXXXXX" libraries={["places"]}> 
-    <LoadScript googleMapsApiKey="REPLACE" libraries={["places"]}>
+    <LoadScript googleMapsApiKey={process.env.REACT_APP_GOOGLE_KEY} libraries={["places"]}>
       <GoogleMap mapContainerStyle={mapContainerStyle} zoom={14} center={currentLocation}>
         {directions && <DirectionsRenderer directions={directions} />}
       </GoogleMap>

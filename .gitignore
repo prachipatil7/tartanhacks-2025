@@ -1,3 +1,7 @@
+google_credentials.json
+tartan/*
+.env
+
 # Node modules
 node_modules/
 npm-debug.log*
