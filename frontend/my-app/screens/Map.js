@@ -29,7 +29,7 @@ const MapComponent = () => {
       <input type="text" placeholder="Enter destination" value={end} onChange={(e) => setEnd(e.target.value)} />
       <button onClick={fetchDirections}>Get Directions</button>
        
-      <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
+      <LoadScript googleMapsApiKey="AIzaSyCPa7bi4KGa4T-Xg5cmYI3yVUVe-MO5N-M">
         <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={14}>
           {directionsResponse && <DirectionsRenderer directions={directionsResponse} />}
         </GoogleMap>

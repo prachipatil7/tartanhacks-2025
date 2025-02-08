@@ -3,7 +3,7 @@ from google.cloud import texttospeech
 
 
 # Set up authentication
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "REPLACE"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/AnuranjanAnand/Downloads/google_credentials.json"
 
 
 def synthesize_text(text):

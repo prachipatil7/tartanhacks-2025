@@ -66,24 +66,26 @@ const NavigationPage = () => {
   }
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        setCurrentLocation({ lat, lng });
-
-        // Fetch the formatted address and update state
-        const formattedAddress = await getFormattedAddress(lat, lng);
-        setStartAddress(formattedAddress);
-      },
-      () => alert("Could not get location.")
-    );
-  }, []);
+    const intervalId = setInterval(() => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log(
+            "Location every 1 sec",
+            position.coords.latitude,
+            position.coords.longitude
+          );
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        }
+      );
+    }, 1000);
+    return () => clearInterval(intervalId);
+}, []);
 
   // Function to get formatted address from lat, lng
   const getFormattedAddress = async (lat, lng) => {
-    const API_KEY = "REPLACE"; // Replace with actual API Key
+    const API_KEY = "AIzaSyCPa7bi4KGa4T-Xg5cmYI3yVUVe-MO5N-M"; // Replace with actual API Key
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`;
 
     try {
@@ -180,7 +182,7 @@ const NavigationPage = () => {
 
   return (
     //THIS IS WHERE YOU ADD THE API KEY  <LoadScript googleMapsApiKey="XXXXXXXXXX" libraries={["places"]}> 
-    <LoadScript googleMapsApiKey="REPLACE" libraries={["places"]}>
+    <LoadScript googleMapsApiKey="AIzaSyCPa7bi4KGa4T-Xg5cmYI3yVUVe-MO5N-M" libraries={["places"]}>
       <GoogleMap mapContainerStyle={mapContainerStyle} zoom={14} center={currentLocation}>
         {directions && <DirectionsRenderer directions={directions} />}
       </GoogleMap>

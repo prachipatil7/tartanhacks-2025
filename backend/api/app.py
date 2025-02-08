@@ -27,7 +27,7 @@ app.add_middleware(
 @app.post("/destination")
 async def handle_destination(data: TripStatus):
     current_status = data
-
+    print('data')
     return JSONResponse(
         content={"status": "success", "message": "Data received successfully!"},
         status_code=200,

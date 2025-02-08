@@ -20,6 +20,7 @@ class TripStatus(BaseModel):
     start: Location
     dest: Location
     duration: str
+    cur: Location
     distance: str
     route: Optional[List[Direction]] = []
     landmarks: Optional[List[Location]] = []
