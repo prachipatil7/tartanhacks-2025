@@ -57,7 +57,7 @@ const NavigationPage = () => {
   };
 
   return (
-    //THIS IS WHERE YOU ADD THE API KEY 
+    //THIS IS WHERE YOU ADD THE API KEY  <LoadScript googleMapsApiKey="XXXXXXXXXX" libraries={["places"]}> 
     <LoadScript googleMapsApiKey="{process.env.REACT_APP_GOOGLE_MAPS_API_KEY}" libraries={["places"]}> 
       <GoogleMap mapContainerStyle={mapContainerStyle} zoom={14} center={currentLocation}>
         {directions && <DirectionsRenderer directions={directions} />}

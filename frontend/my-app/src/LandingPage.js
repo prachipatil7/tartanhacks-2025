@@ -10,7 +10,7 @@ const LandingPage = () => {
   return (
     <div className="landing-container">
       <h1>Passenger Princess</h1>
-      <p>Your fun, conversational navigation buddy!</p>
+      <p>Turn on the car, babe! So ready for the ride :D</p>
       <button className="start-button" onClick={() => navigate("/navigation")}>
         Let's Go!
       </button>
@@ -19,3 +19,5 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+
+
