@@ -249,7 +249,7 @@ const NavigationPage = () => {
 
   // Function to fetch a formatted address from latitude and longitude
   const getFormattedAddress = async (lat, lng) => {
-    const API_KEY = "AIzaSyCPa7bi4KGa4T-Xg5cmYI3yVUVe-MO5N-M"; // Replace with actual API Key
+    const API_KEY = "REPLACE"; // Replace with actual API Key
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`;
     try {
       const response = await fetch(url);
@@ -412,7 +412,7 @@ const NavigationPage = () => {
   };
 
   return (
-    <LoadScript googleMapsApiKey="AIzaSyCPa7bi4KGa4T-Xg5cmYI3yVUVe-MO5N-M" libraries={["places"]}>
+    <LoadScript googleMapsApiKey="REPLACE" libraries={["places"]}>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         zoom={14}
