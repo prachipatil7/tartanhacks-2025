@@ -1,15 +1,12 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 
 class Location(BaseModel):
     lat: float
     lng: float
-
-
-class Landmark(BaseModel):
-    location: Location
-    name: str
+    name: Optional[str] = None
+    address: Optional[str] = None
 
 
 class Direction(BaseModel):
@@ -23,5 +20,6 @@ class TripStatus(BaseModel):
     start: Location
     dest: Location
     duration: str
-    route: List[Direction]
-    landmarks: List[Landmark]
+    distance: str
+    route: Optional[List[Direction]] = []
+    landmarks: Optional[List[Location]] = []
