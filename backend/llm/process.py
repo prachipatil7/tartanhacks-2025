@@ -1,11 +1,12 @@
 from openai import OpenAI
 from .utils import remove_emojis
 
-OPENAI_KEY = OPENAI_KEY = "<OPENAI_KEY>"
+OPENAI_KEY = "<OPENAI_KEY>"
+
 client = OpenAI(api_key=OPENAI_KEY)
 
 
-def process_user_speech(text):
+def process_user_speech(text: str, status):
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
