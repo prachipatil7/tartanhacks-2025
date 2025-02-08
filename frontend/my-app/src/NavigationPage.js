@@ -249,6 +249,59 @@ const NavigationPage = () => {
 
   let socket, recognition;
 
+
+//   let socket;
+//   let recognition;
+
+  function setupAudioCapture() {
+    socket = new WebSocket("http://127.0.0.1:8000/ws");
+
+    socket.onopen = () => {
+      console.log("WebSocket connection established");
+    };
+
+    socket.onmessage = (event) => {
+      const audioData = event.data;
+
+      // Convert the raw data into a Blob, specifying the correct MIME type
+      const audioBlob = new Blob([audioData], { type: "audio/wav" });
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      // Create a new Audio object and play the sound
+      const audio = new Audio(audioUrl);
+      audio.play()
+        .then(() => {
+          console.log("Playing received audio...");
+        })
+        .catch((error) => {
+          console.error("Error playing audio:", error);
+        });
+    };
+
+    function sendTranscriptToServer(transcript) {
+      socket.send(transcript);
+    }
+
+    recognition = new (window.SpeechRecognition ||
+      window.webkitSpeechRecognition)();
+    recognition.continuous = true; // Keeps listening
+    recognition.interimResults = false; // Provides real-time results
+
+    recognition.onresult = (event) => {
+      let transcript = event.results[event.results.length - 1][0].transcript;
+      console.log("User said:", transcript);
+      sendTranscriptToServer(transcript);
+    };
+
+    recognition.start(); // Start listening
+
+    // Handle errors
+    recognition.onerror = (event) => {
+      console.error("Error occurred:", event.error);
+    };
+  }
+
+
   // Function to fetch a formatted address from latitude and longitude
   const getFormattedAddress = async (lat, lng) => {
     const API_KEY = "REPLACE"; // Replace with actual API Key
@@ -374,6 +427,7 @@ const NavigationPage = () => {
                 address: destination,
                 lat: routeLeg.end_location.lat(),
                 long: routeLeg.end_location.lng(),
+                name: destination,
               },
               duration: routeLeg.duration.text,
               distance: routeLeg.distance.text,
@@ -397,7 +451,7 @@ const NavigationPage = () => {
     };
   }, []);
 
-  // Get the custom pink car icon
+  // Get the custom car icon
   const getCarIcon = useCallback(() => {
     if (
       window.google &&
