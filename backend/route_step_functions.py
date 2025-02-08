@@ -1,42 +1,76 @@
 import googlemaps
 import requests
 import math
+import re
 
 
-ORIGIN = "1322 S Prairie Ave"
-DESTINATION = "65 E Scott St"
-
-class Location:
-    def __init__(self, lat = 0.0, lng = 0.0):
-        self.lat = lat
-        self.lng = lng
-        
-class Step:
-    def __init__(self, start_location = Location(), end_location = Location(), distance = "", instructions = "", action = ""):
-        self.start_location = start_location
-        self.end_location = end_location
-        self.distance = distance
-        self.instructions = instructions
-        self.action = action
-
+ORIGIN = "TCS Hall"
+DESTINATION = "3618 Sardis Way, Pittsburgh"
 
 #enter API key
 gmap = googlemaps.Client(key="")
 
 
-def get_current_location():
-    response = requests.get('https://ipinfo.io/json')
-    if response.status_code == 200:
-        data = response.json()
-        lat, lng = data['loc'].split(',')
-        current_location = Location(lat, lng)
-        return current_location
-    else:
-        return Location()
+
+#calculate bearing (direction)
+def calculate_bearing(start_location, end_location):
+    d_lon = end_location.lng - start_location.lng
+    y = math.sin(d_lon) * math.cos(start_location.lat)
+    x = math.cos(start_location.lat) * math.sin(end_location.lat) - math.sin(start_location.lat) * math.cos(end_location.lat) * math.cos(d_lon)
+    return (math.degrees(math.atan2(y, x)) + 360) % 360
+
+
+
+class Location:
+    def __init__(self, lat = 0.0, lng = 0.0):
+        self.lat = lat
+        self.lng = lng
+    def __eq__(self, other):
+        return isinstance(other, Location) and self.lat == other.lat and self.lng == other.lng
+    def __hash__(self):
+        return hash((self.lat, self.lng))
+        
+class Step:
+    def __init__(self, start_location, end_location, distance, instructions, bearing = 0, action = ""):
+        self.start_location = start_location
+        self.end_location = end_location
+        self.distance = distance
+        self.instructions = instructions
+        self.bearing = bearing
+        self.action = action
+        self.landmark_name = None
+        self.landmark_clockwise_bearing = None
+
+class Place:
+    def __init__(self, name = "", location = Location(), distance = float('inf'), bearing = float('inf')):
+        self.name = name
+        self.location = location
+        self.distance = distance
+        self.bearing = bearing
+    def __eq__(self, other):
+        return isinstance(other, Place) and self.name == other.name and self.location == other.location and self.distance == other.distance
+
+    def __hash__(self):
+        return hash((self.name, self.location, self.distance))
+
+    def __repr__(self):
+        return f"Place(name={self.name}, location={self.location})"
+
+
+# def get_current_location():
+#     response = requests.get('https://ipinfo.io/json')
+#     if response.status_code == 200:
+#         data = response.json()
+#         lat, lng = data['loc'].split(',')
+#         current_location = Location(lat, lng)
+#         return current_location
+#     else:
+#         return Location()
     
 ## coordinate tuple -> location object
 # def create_location(coordinate):
 #     return Location(coordinate[0], coordinate[1])
+
 
 #get route dict, set alternatives = True to get alt routes
 def get_directions(start, end):
@@ -49,14 +83,15 @@ def get_directions(start, end):
     return directions[0]
 
 
-#get steps of one leg of trip
+#get steps of one trip leg
 def get_leg_steps(leg):
     steps = []
-    for step in leg['steps']:
-        new_step = Step(Location(step['start_location']['lat'], step['start_location']['lng']),
-                        Location(step['end_location']['lat'], step['end_location']['lng']),
-                        step['distance']['text'],
-                        step['html_instructions'])
+    for i, step in enumerate(leg['steps']):
+        new_step = Step(start_location = Location(lat = step['start_location']['lat'], lng = step['start_location']['lng']),
+                        end_location = Location(lat = step['end_location']['lat'], lng = step['end_location']['lng']),
+                        distance = step['distance']['text'],
+                        instructions = step['html_instructions'])
+        new_step.bearing = calculate_bearing(new_step.start_location, new_step.end_location)
         if 'maneuver' in step:
             new_step.action = step['maneuver']
         steps.append(new_step)
@@ -74,64 +109,132 @@ def get_all_route_steps(route):
     return sum(get_route_steps_by_leg(route).values(), [])
 
 
-#calculate bearing (direction)
-def calculate_bearing(start_location, end_location):
-    d_lon = end_location.lng - start_location.lng
-    y = math.sin(d_lon) * math.cos(start_location.lat)
-    x = math.cos(start_location.lat) * math.sin(end_location.lat) - math.sin(start_location.lat) * math.cos(end_location.lat) * math.cos(d_lon)
-    return (math.degrees(math.atan2(y, x)) + 360) % 360
-
 #calculate turn bearing (difference in direction)
-def turn_bearing(step1, step2):
-    initial_bearing = calculate_bearing(step1.start_location, step1.end_location)
-    new_bearing = calculate_bearing(step2.start_location, step2.end_location)
-    return (new_bearing - initial_bearing + 360) % 360
+def calculate_relative_bearing(old_bearing, new_bearing):
+    return (old_bearing - new_bearing + 360) % 360
 
-
-
-#get action locations (ie. not going straight)
-def get_action_locations(route_steps):
-    action_locations = []
-    for i, step in enumerate(route_steps):
-        if step.action != "":
-            location = step.start_location
-            action_locations.append({
-                'step_index': i,
-                'action': step.action,
-                'location': location
-            })
-    return action_locations
-
-
+# def check_in_range(loc_rel_bearing, turn_direction, turn_bearing):
+    #  if turn_direction == "right":
+    #     if  > 180:
+    #         return initturn_directionial_relative_bearing
+    #     else:
+    #         return initial_relative_bearing
+    # elif turn_direction == "left":
+    #     if initial_relative_bearing < 180:
+    #         return -initial_relative_bearing
+    #     else:
+    #         return -(360 - initial_relative_bearing)
+    # else:
+    #     return initial_relative_bearing
+        
 #get action locations (ie. not going straight) + collect bearing change for turns
+#input: Step List
 def get_action_locations(route_steps):
     action_locations = []
     for i, step in enumerate(route_steps):
-        if step.action != "" & i > 0:
-            turn_bearing = turn_bearing(route_steps[i-1], step)
+        if (step.action != "") & (i > 0):
+            # initial_bearing = calculate_bearing(route_steps[i-1].bearing)
+            # new_bearing = calculate_bearing(step.bearing)
+            turn_bearing = calculate_relative_bearing(route_steps[i-1].bearing, step.bearing)
             location = step.start_location
             action_locations.append({
                 'step_index': i,
+                'step' : step,
                 'action': step.action,
+                'prior_bearing': route_steps[i-1].bearing,
                 'bearing_change': turn_bearing,
                 'location': location
             })
     return action_locations
 
-#get nearby landmarks for turns (returns list of name/location dicts), radius units is in meters
-def get_nearby_landmarks(location, radius=20):
-    places = gmap.places_nearby((location.lat, location.lng), radius=radius, keyword="building")  
-    points_of_interest = []
+#distance between two locations in meters
+def distance(loc1, loc2):
+    lat1, lon1 = loc1.lat, loc1.lng
+    lat2, lon2 = loc2.lat, loc2.lng
+    R = 6371  # Earth's radius in kilometers
+
+    # Convert latitude and longitude to radians
+    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+
+    # Haversine formula
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+    distance = R * c * 1000
+
+    return distance
+
+def get_nearby_landmarks(location, radius=75):
+    landmark_types = ['establishment', 'building']
+    points_of_interest = set()
+    for place_type in landmark_types:
+        places = gmap.places_nearby((location.lat, location.lng), keyword=place_type, radius=radius)  #building
+        # print(places)
+        # print(place_type)
+        for place in places['results']:
+            # print(place['name'])
+            landmark_location = Location(lat = place['geometry']['location']['lat'], lng = place['geometry']['location']['lng'])
+            distance_to_landmark = distance(location, landmark_location)
+            # print(distance_to_landmark)
+            if distance_to_landmark <= radius:
+                # print(place['name'])
+                landmark = Place(name = place['name'], 
+                                 location = landmark_location, 
+                                 distance = distance_to_landmark)
+                points_of_interest.add(landmark)
+    return sorted(list(points_of_interest), key=lambda place: place.distance)
+
+def get_turn_direction(instruction):
+    if re.search(r'right', instruction, re.IGNORECASE):
+        return "Right"
+    else:
+        return "Left"
+
+
+def landmark_range_check(x, step, turn_bearing, prior_bearing):
     
-    for place in places['results']:
-        name = place['name']
-        lat = place['geometry']['location']['lat']
-        lng = place['geometry']['location']['lng']
-        points_of_interest.append({
-            'name': name,
-            'location': Location(lat, lng)
-        })
-    return points_of_interest
+    location_bearing = calculate_bearing(step.start_location, x.location)
+    loc_rel_bearing = calculate_relative_bearing(prior_bearing, location_bearing)
+    
+    dir = get_turn_direction(step.action)
+
+    if dir == "Right":
+        if (turn_bearing - 25 <= loc_rel_bearing < 270):
+            return (True, loc_rel_bearing)
+    elif dir == "Left":
+        if (180 <= loc_rel_bearing <= turn_bearing + 25):
+                return (True, loc_rel_bearing)
+    
+    return (False, loc_rel_bearing)
+    
+   
+def get_inrange_landmarks(location, step, turn_bearing, prior_bearing):
+    landmarks = get_nearby_landmarks(location)
+    inrange_landmarks = []
+    if landmarks: 
+        for x in landmarks:
+            check, bearing = landmark_range_check(x, step, turn_bearing, prior_bearing)
+            if check:
+                x.bearing = bearing
+                inrange_landmarks.append(x)
+        return inrange_landmarks
+    
+    return None
 
 
-#Add filter based on bearing change
+def extract_turn_landmarks(route):
+    route_steps = get_all_route_steps(route)
+    actions = get_action_locations(route_steps)
+    for i, step in enumerate(route_steps):
+        if (i in [a['step_index'] for a in actions]):
+            turn_bearing, prior_bearing = [(a['bearing_change'], a['prior_bearing']) for a in actions if a['step_index'] == i][0]
+            # print(turn_bearing)
+            # print(prior_bearing)
+            landmarks = get_inrange_landmarks(step.start_location, step, turn_bearing, prior_bearing)
+            # print(landmarks)
+            if landmarks:
+                landmark = landmarks[0]
+                step.landmark_name = landmark.name
+                step.landmark_clockwise_bearing = landmark.bearing
+    return route_steps    
