@@ -1,0 +1,37 @@
+.landing-container {
+    text-align: center;
+    padding: 100px;
+    background: linear-gradient(to right, #ff9a9e, #fad0c4);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  h1 {
+    font-size: 3rem;
+    color: white;
+  }
+  
+  p {
+    font-size: 1.2rem;
+    color: white;
+    margin-bottom: 20px;
+  }
+  
+  .start-button {
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border: none;
+    background-color: #ff69b4;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: 0.3s;
+  }
+  
+  .start-button:hover {
+    background-color: #ff4081;
+  }
+  
