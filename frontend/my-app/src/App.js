@@ -18,8 +18,21 @@ function App() {
     };
 
     socket.onmessage = (event) => {
-      const response = event.data;
-      console.log("Received:", response);
+      const audioData = event.data;
+
+      // Convert the raw data into a Blob, specifying the correct MIME type
+      const audioBlob = new Blob([audioData], { type: "audio/wav" });
+      const audioUrl = URL.createObjectURL(audioBlob);
+  
+      // Create a new Audio object and play the sound
+      const audio = new Audio(audioUrl);
+      audio.play()
+        .then(() => {
+          console.log("Playing received audio...");
+        })
+        .catch((error) => {
+          console.error("Error playing audio:", error);
+        });
     };
 
     function sendTranscriptToServer(transcript) {
@@ -44,6 +57,8 @@ function App() {
       console.error("Error occurred:", event.error);
     };
   }
+
+
 
   function start() {
     alert("Navigation Starting!");

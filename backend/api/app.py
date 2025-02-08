@@ -3,6 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .models import TripStatus
 
+from llm.process import process_user_speech
+from .models import TripStatus
+from .t2v import synthesize_text
+
 app = FastAPI()
 current_status = None
 
