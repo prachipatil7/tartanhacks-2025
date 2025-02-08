@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from db_utils.db import SQLiteDB
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -20,7 +20,9 @@ def root():
     return {"message": "hello world"}
 
 
-@app.get("/users/{user_id}")
-def get_user_name(user_id):
-    user = db.get_user_name(user_id)
-    return user
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(data)
