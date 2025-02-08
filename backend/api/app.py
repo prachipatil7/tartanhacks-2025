@@ -6,6 +6,7 @@ from .models import TripStatus
 from llm.process import process_user_speech
 from .models import TripStatus
 from .t2v import synthesize_text
+import json
 
 app = FastAPI()
 current_status = None
@@ -25,19 +26,8 @@ app.add_middleware(
 # Create an endpoint to handle POST requests at /destination
 @app.post("/destination")
 async def handle_destination(data: TripStatus):
-    # Extract the data from the request body
-    start = data.start
-    dest = data.dest
-    duration = data.duration
-    distance = data.distance
+    current_status = data
 
-    # You can print this or save it to a database
-    print("Start:", start)
-    print("Destination:", dest)
-    print("Duration:", duration)
-    print("Distance:", distance)
-
-    # Respond with a success message
     return JSONResponse(
         content={"status": "success", "message": "Data received successfully!"},
         status_code=200,
@@ -49,7 +39,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:
         data = await websocket.receive_text()
-        response = process_user_speech(data)
+        response = process_user_speech(data, current_status)
         sound_bytes = synthesize_text(response)
         await websocket.send_bytes(sound_bytes)
 
@@ -58,7 +48,21 @@ async def websocket_endpoint(websocket: WebSocket):
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:
-        data = await websocket.receive_text()
-        # response = update_status(data, current_trip)
-        # if response
+        message = await websocket.recv()
+        try:
+            data = json.loads(message)
+            if isinstance(data, dict):
+                print("Received dictionary:", data)
+        except json.JSONDecodeError:
+            print("Received message is not valid JSON")
+
+        response = update_status(data, current_status)
+        # if response == True:
+        # response = process_navigation_prompt(data, current_status)
+        # sound_bytes = synthesize_text(response)
+        # await websocket.send_bytes(sound_bytes)
         await websocket.send_text(data)
+
+
+def update_status(new, curr):
+    pass
