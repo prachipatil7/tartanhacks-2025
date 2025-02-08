@@ -15,12 +15,21 @@ class TripStatus(BaseModel):
 
     def model_post_init(self, _):
         directions = get_directions(self.start, self.dest)
-        self.route = get_all_route_steps(directions).reverse()
+        # print(directions)
+        self.route = get_all_route_steps(directions)
+        self.route.reverse()
 
     def check_route_instruction(self):
-        print(self.curr.lat, self.route[-1].start_location.lat)
-        if self.curr == self.route[-1].start_location:
-            step = self.route.pop()
+        if self.curr == self.route[0].start_location:
+            step = self.route.pop(0)
+            print(step)
             return synthesize_text(step.instructions)
         else:
             return None
+
+    def update_status(self):
+        directions = get_directions(self.curr, self.dest)
+        route = directions["legs"][0]
+        self.duration = route["duration"]["text"]
+        self.distance = route["distance"]["text"]
+        self.route = get_all_route_steps(directions)

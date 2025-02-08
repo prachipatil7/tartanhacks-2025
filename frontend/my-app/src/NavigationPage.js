@@ -8,23 +8,7 @@ const mapContainerStyle = {
   height: "100vh",
 };
 
-const playOnEvent = (event) => {
-  const audioData = event.data;
 
-  // Convert the raw data into a Blob, specifying the correct MIME type
-  const audioBlob = new Blob([audioData], { type: "audio/wav" });
-  const audioUrl = URL.createObjectURL(audioBlob);
-
-  // Create a new Audio object and play the sound
-  const audio = new Audio(audioUrl);
-  audio.play()
-    .then(() => {
-      console.log("Playing received audio...");
-    })
-    .catch((error) => {
-      console.error("Error playing audio:", error);
-    });
-}
 
 const NavigationPage = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -37,28 +21,47 @@ const NavigationPage = () => {
   let navsocket;
   let recognition;
 
+  const playOnEvent = (event) => {
+    const audioData = event.data;
+
+    // Convert the raw data into a Blob, specifying the correct MIME type
+    const audioBlob = new Blob([audioData], { type: "audio/wav" });
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    // Create a new Audio object and play the sound
+    const audio = new Audio(audioUrl);
+    audio.play()
+      .then(() => {
+        console.log("Playing received audio...");
+      })
+      .catch((error) => {
+        console.error("Error playing audio:", error);
+      });
+  }
+
   useEffect(() => {
     setupNavSocket();
 
     const sendCoordinatesToServer = (latt, long) => {
       const data = { lat: latt, lng: long }
-      navsocket.send(JSON.stringify(data));
+      if (navsocket.readyState === WebSocket.OPEN) {
+        console.log("sending location", latt, long)
+        navsocket.send(JSON.stringify(data));
+      } else {
+        console.log("socket unready state", navsocket.readyState)
+      }
     }
 
     // Set up an interval to run every 2 seconds
     setInterval(() => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          console.log(
-            "Location every 1 sec",
-            position.coords.latitude,
-            position.coords.longitude
-          );
           sendCoordinatesToServer(position.coords.latitude, position.coords.longitude)
         },
         (error) => {
           console.error("Error getting location:", error);
-        }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }, 1000);
     // return () => clearInterval(intervalId);
@@ -66,7 +69,7 @@ const NavigationPage = () => {
 
 
   function setupNavSocket() {
-    navsocket = new WebSocket("http://127.0.0.1:8000/navigation");
+    navsocket = new WebSocket("https://172.26.41.122:8000/navigation");
 
     navsocket.onopen = () => {
       console.log("NavSocket connection established");
@@ -74,12 +77,10 @@ const NavigationPage = () => {
 
     navsocket.onmessage = (event) => playOnEvent(event);
 
-
-
   }
 
   function setupAudioCapture() {
-    socket = new WebSocket("http://127.0.0.1:8000/ws");
+    socket = new WebSocket("https://172.26.41.122:8000/ws");
 
     socket.onopen = () => {
       console.log("WebSocket connection established");
@@ -209,7 +210,7 @@ const NavigationPage = () => {
   const sendToBackend = async (data) => {
     console.log(data)
     try {
-      const response = await fetch("http://localhost:8000/destination", {
+      const response = await fetch("https://172.26.41.122:8000/destination", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
