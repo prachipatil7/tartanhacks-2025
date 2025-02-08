@@ -1,8 +1,7 @@
 from openai import OpenAI
 from .utils import remove_emojis
 
-OPENAI_KEY = "<APIKEY>"
-
+OPENAI_KEY = OPENAI_KEY = "<OPENAI_KEY>"
 client = OpenAI(api_key=OPENAI_KEY)
 
 
@@ -19,5 +18,5 @@ def process_user_speech(text):
     )
 
     response_text = completion.choices[0].message
-    print(response_text)
+    # print(response_text)
     return remove_emojis(response_text.content)

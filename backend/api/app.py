@@ -32,6 +32,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 
+from llm.process import process_user_speech
+from .models import TripStatus
+from .t2v import synthesize_text
 app = FastAPI()
 
 # CORS configuration
@@ -75,7 +78,13 @@ async def handle_destination(data: NavigationData):
     print("Duration:", duration)
     print("Distance:", distance)
 
-    # Respond with a success message
-    return JSONResponse(content={"status": "success", "message": "Data received successfully!"}, status_code=200)
-
-# Run the application with: uvicorn app:app --reload
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        response = process_user_speech(data)
+        sound_bytes = synthesize_text(response)
+        # print(sound_bytes)
+        
+        await websocket.send_bytes(sound_bytes)
