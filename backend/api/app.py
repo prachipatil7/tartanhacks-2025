@@ -2,9 +2,11 @@ from fastapi import FastAPI, WebSocket
 from db_utils.db import SQLiteDB
 from fastapi.middleware.cors import CORSMiddleware
 from llm.process import process_user_speech
+from .models import TripStatus
 
 app = FastAPI()
 db = SQLiteDB()
+current_trip = None
 
 
 app.add_middleware(
@@ -22,8 +24,8 @@ def root():
 
 
 @app.post("/destination")
-def create_destination(new_destination):
-    pass
+def start_trip(new_destination: TripStatus):
+    current_trip = new_destination
 
 
 @app.websocket("/ws")
