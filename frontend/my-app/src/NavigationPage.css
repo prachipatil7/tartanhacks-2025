@@ -1,0 +1,26 @@
+.controls {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    gap: 10px;
+  }
+  
+  input {
+    padding: 10px;
+    font-size: 1rem;
+  }
+  
+  button {
+    padding: 10px 15px;
+    font-size: 1rem;
+    background: #ff69b4;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
