@@ -17,6 +17,7 @@
   
   button {
     padding: 10px 15px;
+    font-family: fantasy;
     font-size: 1rem;
     background: #ff69b4;
     color: white;
@@ -27,6 +28,7 @@
 
   
   .info {
+    font-family: fantasy;
     padding: 10px 15px;
     font-size: 1rem;
     background: rgba(255, 105, 180, 0.8);  /* Semi-transparent pink background */

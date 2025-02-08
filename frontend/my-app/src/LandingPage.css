@@ -15,13 +15,15 @@
   }
   
   p {
+    font-family: fantasy;
     font-size: 1.2rem;
-    color: white;
+    color: palevioletred;
     margin-bottom: 20px;
   }
   
   .start-button {
     padding: 10px 20px;
+    font-family: fantasy;
     font-size: 1.5rem;
     border: none;
     background-color: #ff69b4;

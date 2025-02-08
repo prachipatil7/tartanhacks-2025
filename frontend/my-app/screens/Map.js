@@ -26,7 +26,7 @@ const MapComponent = () => {
     <div>
       <h2>Passenger Princess Navigation</h2>
       <input type="text" placeholder="Enter start" value={start} onChange={(e) => setStart(e.target.value)} />
-      <input type="text" placeholder="Enter destination" value={end} onChange={(e) => setEnd(e.target.value)} />
+      <input type="text" style={{ fontFamily: "fantasy"}} placeholder="Enter destination" value={end} onChange={(e) => setEnd(e.target.value)}  />
       <button onClick={fetchDirections}>Get Directions</button>
        
       <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
