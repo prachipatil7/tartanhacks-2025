@@ -33,6 +33,8 @@ const NavigationPage = () => {
     audio.play()
       .then(() => {
         console.log("Playing received audio...");
+      }).then(() => {
+        socket.send("done")
       })
       .catch((error) => {
         console.error("Error playing audio:", error);

@@ -1,6 +1,12 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from .maps import get_directions, get_all_route_steps, Location, Step
+from .maps import (
+    get_directions,
+    get_all_route_steps,
+    create_route_with_stop,
+    Location,
+    Step,
+)
 from .t2v import synthesize_text
 
 
@@ -29,6 +35,15 @@ class TripStatus(BaseModel):
 
     def update_status(self):
         directions = get_directions(self.curr, self.dest)
+        route = directions["legs"][0]
+        self.duration = route["duration"]["text"]
+        self.distance = route["distance"]["text"]
+        self.route = get_all_route_steps(directions)
+
+    def add_stop(self, keyword, location_type):
+        directions = create_route_with_stop(
+            self.curr, self.dest, keyword, location_type
+        )
         route = directions["legs"][0]
         self.duration = route["duration"]["text"]
         self.distance = route["distance"]["text"]

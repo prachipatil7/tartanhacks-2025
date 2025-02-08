@@ -20,7 +20,7 @@ class GlobalState:
         self.messages = [
             {
                 "role": "system",
-                "content": "You are a fun, girly driving buddy. If you are asked a question about driving, you will use one of the tool calls to find the answer.",
+                "content": "You are a fun driving bestie. If you are asked a question about driving, you will use one of the tool calls to find the answer. Or, you will summarize the trip information as broadly as possible without repeating it word for word",
             }
         ]
 
@@ -76,12 +76,14 @@ async def websocket_endpoint(websocket: WebSocket):
             continue
         current_status.update_status()
         messages = await state.get_messages()
-        response, new_messages = process_user_speech(data, current_status, messages)
+        response, new_messages, status = process_user_speech(
+            data, current_status, messages
+        )
         await state.set_messages(new_messages)
         sound_bytes = synthesize_text(response)
         await websocket.send_bytes(sound_bytes)
-        print(len(sound_bytes))
-        await asyncio.sleep(len(sound_bytes) / 1000)
+        await state.set_status(status)
+        _ = await websocket.receive_text()
 
 
 @app.websocket("/navigation")

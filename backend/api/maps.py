@@ -39,23 +39,86 @@ DESTINATION = "65 E Scott St"
 gmap = googlemaps.Client(key=os.environ.get("GMAPS_API_KEY"))
 
 
-def get_current_location():
-    response = requests.get("https://ipinfo.io/json")
-    if response.status_code == 200:
-        data = response.json()
-        lat, lng = data["loc"].split(",")
-        current_location = Location(lat=lat, lng=lng)
-        return current_location
-    else:
-        return Location()
+import requests
+
+
+def create_route_with_stop(start, end, keyword, location_type):
+    start_str = f"{start.lat},{start.lng}"
+    end_str = f"{end.lat},{end.lng}"
+    # Calculate initial route
+    initial_route = gmap.directions(
+        origin=start_str, destination=end_str, mode="driving"
+    )
+    route_polyline = initial_route[0]["overview_polyline"]["points"]
+
+    # coffee_shops = gmap.places_nearby(
+    #     route=route_polyline,
+    #     query=keyword,
+    #     type=location_type,
+    #     max_detour_duration=600,
+    # )
+
+    import requests
+    import json
+
+    url = "https://places.googleapis.com/v1/places:searchText"
+    api_key = os.environ.get("GMAPS_API_KEY")
+
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": api_key,
+        "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.priceLevel,routingSummaries",
+    }
+
+    data = {
+        "textQuery": keyword,
+        # "type": location_type,
+        "searchAlongRouteParameters": {"polyline": {"encodedPolyline": route_polyline}},
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+    print(response.content)
+    data = response.json()
+
+    # Choose the best coffee shop
+    sorted_places = [
+        place
+        for _, place in sorted(
+            zip(
+                [
+                    summary["legs"][0]["distanceMeters"]
+                    for summary in data["routingSummaries"]
+                ],
+                data["places"],
+            ),
+            key=lambda x: x[0],
+        )
+    ]
+    best_stop = sorted_places[0]
+    print(best_stop)
+
+    # Create the final route
+    final_route = gmap.directions(
+        origin=start_str,
+        destination=end_str,
+        waypoints=[best_stop["formattedAddress"]],
+        optimize_waypoints=True,
+        mode="driving",
+    )
+
+    return final_route[0]
 
 
 # get route dict, set alternatives = True to get alt routes
-def get_directions(start: Location, end: Location):
+def get_directions(start: Location, end: Location, waypoints: list = []):
     start_coords = (start.lat, start.lng)
     end_coords = (end.lat, end.lng)
     directions = gmap.directions(
-        origin=start_coords, destination=end_coords, mode="driving", alternatives=False
+        origin=start_coords,
+        destination=end_coords,
+        mode="driving",
+        alternatives=False,
+        waypoints=waypoints,
     )
 
     return directions[0]
