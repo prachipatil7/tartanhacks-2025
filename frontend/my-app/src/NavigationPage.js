@@ -14,6 +14,57 @@ const NavigationPage = () => {
   const [directions, setDirections] = useState(null);
   const [autocomplete, setAutocomplete] = useState(null);
 
+  let socket;
+  let recognition;
+
+  function setupAudioCapture() {
+    socket = new WebSocket("http://127.0.0.1:8000/ws");
+
+    socket.onopen = () => {
+      console.log("WebSocket connection established");
+    };
+
+    socket.onmessage = (event) => {
+      const audioData = event.data;
+
+      // Convert the raw data into a Blob, specifying the correct MIME type
+      const audioBlob = new Blob([audioData], { type: "audio/wav" });
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      // Create a new Audio object and play the sound
+      const audio = new Audio(audioUrl);
+      audio.play()
+        .then(() => {
+          console.log("Playing received audio...");
+        })
+        .catch((error) => {
+          console.error("Error playing audio:", error);
+        });
+    };
+
+    function sendTranscriptToServer(transcript) {
+      socket.send(transcript);
+    }
+
+    recognition = new (window.SpeechRecognition ||
+      window.webkitSpeechRecognition)();
+    recognition.continuous = true; // Keeps listening
+    recognition.interimResults = false; // Provides real-time results
+
+    recognition.onresult = (event) => {
+      let transcript = event.results[event.results.length - 1][0].transcript;
+      console.log("User said:", transcript);
+      sendTranscriptToServer(transcript);
+    };
+
+    recognition.start(); // Start listening
+
+    // Handle errors
+    recognition.onerror = (event) => {
+      console.error("Error occurred:", event.error);
+    };
+  }
+
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -32,7 +83,7 @@ const NavigationPage = () => {
 
   // Function to get formatted address from lat, lng
   const getFormattedAddress = async (lat, lng) => {
-    const API_KEY = "YOUR_GOOGLE_MAPS_API_KEY"; // Replace with actual API Key
+    const API_KEY = "REPLACE"; // Replace with actual API Key
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`;
 
     try {
@@ -58,6 +109,7 @@ const NavigationPage = () => {
   };
 
   const startNavigation = async () => {
+    setupAudioCapture()
     if (!currentLocation || !destination || !window.google) return;
 
     // Ensure we have the formatted address before proceeding
@@ -82,11 +134,11 @@ const NavigationPage = () => {
           const navigationData = {
             start: {
               lat: currentLocation.lat,
-              long: currentLocation.lng
+              lng: currentLocation.lng
             },
             dest: {
               lat: result.routes[0].legs[0].end_location.lat(),
-              long: result.routes[0].legs[0].end_location.lng(),
+              lng: result.routes[0].legs[0].end_location.lng(),
               address: destination,
               name: destination, // You can change this to something else if you want
             },
@@ -105,6 +157,7 @@ const NavigationPage = () => {
 
   // Function to send navigation data to the backend API
   const sendToBackend = async (data) => {
+    console.log(data)
     try {
       const response = await fetch("http://localhost:8000/destination", {
         method: "POST",
@@ -113,7 +166,7 @@ const NavigationPage = () => {
         },
         body: JSON.stringify(data),
       });
-
+      console.log(response)
       if (!response.ok) {
         throw new Error("Failed to send data to backend");
       }
@@ -126,8 +179,8 @@ const NavigationPage = () => {
   };
 
   return (
-    //THIS IS WHERE YOU ADD THE API KEY  <LoadScript googleMapsApiKey="XXXXXXXXXX" librarie 
-    <LoadScript googleMapsApiKey="{process.env.REACT_APP_GOOGLE_MAPS_API_KEY}" libraries={["places"]}> 
+    //THIS IS WHERE YOU ADD THE API KEY  <LoadScript googleMapsApiKey="XXXXXXXXXX" libraries={["places"]}> 
+    <LoadScript googleMapsApiKey="REPLACE" libraries={["places"]}>
       <GoogleMap mapContainerStyle={mapContainerStyle} zoom={14} center={currentLocation}>
         {directions && <DirectionsRenderer directions={directions} />}
       </GoogleMap>
