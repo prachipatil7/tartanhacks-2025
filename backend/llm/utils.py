@@ -13,4 +13,4 @@ def remove_emojis(text):
         "]+",
         flags=re.UNICODE,
     )
-    return emoji_pattern.sub(r"", text)
+    return emoji_pattern.sub(r"", text).replace("*", "")

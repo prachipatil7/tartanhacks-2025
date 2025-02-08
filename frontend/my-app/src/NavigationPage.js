@@ -4,231 +4,233 @@ import { LoadScript } from "@react-google-maps/api";
 
 // Define the custom style object at the top of your file
 const mapStyles = [
-    {
-        "featureType": "administrative",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#0c2d64"
-            }
-        ]
-    },
-    {
-        "featureType": "landscape",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#eae6e7"
-            }
-        ]
-    },
-    {
-        "featureType": "landscape",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#0c2d64"
-            }
-        ]
-    },
-    {
-        "featureType": "landscape.man_made",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#eaeaea"
-            }
-        ]
-    },
-    {
-        "featureType": "landscape.man_made",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "visibility": "on"
-            },
-            {
-                "color": "#e0dede"
-            }
-        ]
-    },
-    {
-        "featureType": "poi",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#e0e0e0"
-            }
-        ]
-    },
-    {
-        "featureType": "poi",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "color": "#d6caca"
-            },
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "poi",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#0c2d64"
-            }
-        ]
-    },
-    {
-        "featureType": "poi",
-        "elementType": "labels.icon",
-        "stylers": [
-            {
-                "color": "#f6c6dc"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.attraction",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "visibility": "on"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.business",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.government",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.medical",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.park",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.place_of_worship",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "visibility": "on"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.school",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "visibility": "on"
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#f6c6dc"
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "color": "#f6c6dc"
-            },
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#0c2d64"
-            }
-        ]
-    },
-    {
-        "featureType": "transit",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#0c2d64"
-            }
-        ]
-    },
-    {
-        "featureType": "transit",
-        "elementType": "labels.icon",
-        "stylers": [
-            {
-                "hue": "#ff0000"
-            },
-            {
-                "saturation": "-100"
-            }
-        ]
-    },
-    {
-        "featureType": "water",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#613659"
-            }
-        ]
-    },
-    {
-        "featureType": "water",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#0c2d64"
-            }
-        ]
-    }
+  {
+    "featureType": "administrative",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#0c2d64"
+      }
+    ]
+  },
+  {
+    "featureType": "landscape",
+    "elementType": "geometry.fill",
+    "stylers": [
+      {
+        "color": "#eae6e7"
+      }
+    ]
+  },
+  {
+    "featureType": "landscape",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#0c2d64"
+      }
+    ]
+  },
+  {
+    "featureType": "landscape.man_made",
+    "elementType": "geometry.fill",
+    "stylers": [
+      {
+        "color": "#eaeaea"
+      }
+    ]
+  },
+  {
+    "featureType": "landscape.man_made",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "visibility": "on"
+      },
+      {
+        "color": "#e0dede"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "geometry.fill",
+    "stylers": [
+      {
+        "color": "#e0e0e0"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#d6caca"
+      },
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#0c2d64"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.icon",
+    "stylers": [
+      {
+        "color": "#f6c6dc"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.attraction",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "visibility": "on"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.business",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.government",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.medical",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.place_of_worship",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "visibility": "on"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.school",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "visibility": "on"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry.fill",
+    "stylers": [
+      {
+        "color": "#f6c6dc"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#f6c6dc"
+      },
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#0c2d64"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#0c2d64"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "labels.icon",
+    "stylers": [
+      {
+        "hue": "#ff0000"
+      },
+      {
+        "saturation": "-100"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry.fill",
+    "stylers": [
+      {
+        "color": "#613659"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#0c2d64"
+      }
+    ]
+  }
 ]
 
 const mapContainerStyle = {
   width: "100vw",
   height: "100vh",
 };
+
+
 
 const NavigationPage = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -247,36 +249,79 @@ const NavigationPage = () => {
   const intervalRef = useRef(null);
   const prevLocationRef = useRef(null);
 
-  let socket, recognition;
+
+  let socket;
+  let navsocket;
+  let recognition;
+
+  const playOnEvent = (event) => {
+    const audioData = event.data;
+
+    // Convert the raw data into a Blob, specifying the correct MIME type
+    const audioBlob = new Blob([audioData], { type: "audio/wav" });
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    // Create a new Audio object and play the sound
+    const audio = new Audio(audioUrl);
+    audio.play()
+      .then(() => {
+        console.log("Playing received audio...");
+      }).then(() => {
+        socket.send("done")
+      })
+      .catch((error) => {
+        console.error("Error playing audio:", error);
+      });
+  }
+
+  useEffect(() => {
+    setupNavSocket();
+
+    const sendCoordinatesToServer = (latt, long) => {
+      const data = { lat: latt, lng: long }
+      if (navsocket.readyState === WebSocket.OPEN) {
+        console.log("sending location", latt, long)
+        navsocket.send(JSON.stringify(data));
+      } else {
+        console.log("socket unready state", navsocket.readyState)
+      }
+    }
+
+    // Set up an interval to run every 2 seconds
+    setInterval(() => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          sendCoordinatesToServer(position.coords.latitude, position.coords.longitude)
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }, 1000);
+    // return () => clearInterval(intervalId);
+  }, [navsocket]);
 
 
-//   let socket;
-//   let recognition;
+  function setupNavSocket() {
+    navsocket = new WebSocket("https://172.26.41.122:8000/navigation");
+
+    navsocket.onopen = () => {
+      console.log("NavSocket connection established");
+    };
+
+    navsocket.onmessage = (event) => playOnEvent(event);
+
+  }
 
   function setupAudioCapture() {
-    socket = new WebSocket("http://127.0.0.1:8000/ws");
+    socket = new WebSocket("https://172.26.41.122:8000/ws");
 
     socket.onopen = () => {
       console.log("WebSocket connection established");
     };
 
-    socket.onmessage = (event) => {
-      const audioData = event.data;
-
-      // Convert the raw data into a Blob, specifying the correct MIME type
-      const audioBlob = new Blob([audioData], { type: "audio/wav" });
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      // Create a new Audio object and play the sound
-      const audio = new Audio(audioUrl);
-      audio.play()
-        .then(() => {
-          console.log("Playing received audio...");
-        })
-        .catch((error) => {
-          console.error("Error playing audio:", error);
-        });
-    };
+    socket.onmessage = (event) => playOnEvent(event);
 
     function sendTranscriptToServer(transcript) {
       socket.send(transcript);
@@ -304,7 +349,8 @@ const NavigationPage = () => {
 
   // Function to fetch a formatted address from latitude and longitude
   const getFormattedAddress = async (lat, lng) => {
-    const API_KEY = "REPLACE"; // Replace with actual API Key
+    const API_KEY = process.env.REACT_APP_GOOGLE_KEY; // Replace with actual API Key
+    console.log(API_KEY)
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`;
     try {
       const response = await fetch(url);
@@ -323,7 +369,7 @@ const NavigationPage = () => {
   // Function to send navigation details to the backend
   const sendToBackend = async (data) => {
     try {
-      const response = await fetch("http://localhost:8000/destination", {
+      const response = await fetch("https://172.26.41.122:8000/destination", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -378,16 +424,16 @@ const NavigationPage = () => {
     }
   };
 
-//   const addStop = () => {
-//     setStops([...stops, ""]);
-//   };
+  //   const addStop = () => {
+  //     setStops([...stops, ""]);
+  //   };
 
-//     // Updates the value of a specific stop based on user input
-//    const handleStopChange = (e, index) => {
-//     const newStops = [...stops];
-//     newStops[index] = e.target.value;
-//     setStops(newStops);
-//     };
+  //     // Updates the value of a specific stop based on user input
+  //    const handleStopChange = (e, index) => {
+  //     const newStops = [...stops];
+  //     newStops[index] = e.target.value;
+  //     setStops(newStops);
+  //     };
 
   // Start navigation: fetch directions and send details to backend
   const startNavigation = async () => {
@@ -479,7 +525,7 @@ const NavigationPage = () => {
   };
 
   return (
-    <LoadScript googleMapsApiKey="REPLACE" libraries={["places"]}>
+    <LoadScript googleMapsApiKey={process.env.REACT_APP_GOOGLE_KEY} libraries={["places"]}>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         zoom={14}
@@ -491,18 +537,18 @@ const NavigationPage = () => {
         onLoad={(map) => {
           mapRef.current = map;
         }}
-        
+
       >
         {directions && <DirectionsRenderer directions={directions} />}
         {navigationStarted && currentLocation && getCarIcon() && (
-          <Marker position={currentLocation}             icon={{
+          <Marker position={currentLocation} icon={{
             // Instead of an image, use a CSS animated div
             url: "/media/car-steering-wheel-svgrepo-com.svg",
             //url: "/media/car.svg", // Path to your pink car icon
             scaledSize: new window.google.maps.Size(40, 40),
             anchor: new window.google.maps.Point(20, 20),
           }}
-        />
+          />
         )}
       </GoogleMap>
 
@@ -521,17 +567,17 @@ const NavigationPage = () => {
 
       {/* Display ETA and Distance */}
       {eta && distance && (
-  <div className="info" style={{
-    position: "absolute", bottom: "20px", left: "50%", transform: "translateX(-50%)",
-    background: "white", color: "black", fontWeight: "bold",
-    padding: "10px", borderRadius: "8px", boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-    fontSize: "16px", textAlign: "center", minWidth: "150px",
-    userSelect: "none"  // ✅ Prevents accidental text selection
-  }}>
-    <p><strong>ETA:</strong> {eta}</p>
-    <p><strong>Distance:</strong> {distance}</p>
-  </div>
-)}
+        <div className="info" style={{
+          position: "absolute", bottom: "20px", left: "50%", transform: "translateX(-50%)",
+          background: "white", color: "black", fontWeight: "bold",
+          padding: "10px", borderRadius: "8px", boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+          fontSize: "16px", textAlign: "center", minWidth: "150px",
+          userSelect: "none"  // ✅ Prevents accidental text selection
+        }}>
+          <p><strong>ETA:</strong> {eta}</p>
+          <p><strong>Distance:</strong> {distance}</p>
+        </div>
+      )}
 
       {/* {eta && distance && (
         <div className="info" style={{
