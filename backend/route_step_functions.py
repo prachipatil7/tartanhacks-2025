@@ -74,23 +74,46 @@ def get_all_route_steps(route):
     return sum(get_route_steps_by_leg(route).values(), [])
 
 
-#calculate turn bearing (angle)
+#calculate bearing (direction)
 def calculate_bearing(start_location, end_location):
     d_lon = end_location.lng - start_location.lng
     y = math.sin(d_lon) * math.cos(start_location.lat)
     x = math.cos(start_location.lat) * math.sin(end_location.lat) - math.sin(start_location.lat) * math.cos(end_location.lat) * math.cos(d_lon)
     return (math.degrees(math.atan2(y, x)) + 360) % 360
 
+#calculate turn bearing (difference in direction)
+def turn_bearing(step1, step2):
+    initial_bearing = calculate_bearing(step1.start_location, step1.end_location)
+    new_bearing = calculate_bearing(step2.start_location, step2.end_location)
+    return (new_bearing - initial_bearing + 360) % 360
+
+
 
 #get action locations (ie. not going straight)
 def get_action_locations(route_steps):
     action_locations = []
     for i, step in enumerate(route_steps):
-        if step.maneuver != "":
+        if step.action != "":
             location = step.start_location
             action_locations.append({
                 'step_index': i,
                 'action': step.action,
+                'location': location
+            })
+    return action_locations
+
+
+#get action locations (ie. not going straight) + collect bearing change for turns
+def get_action_locations(route_steps):
+    action_locations = []
+    for i, step in enumerate(route_steps):
+        if step.action != "" & i > 0:
+            turn_bearing = turn_bearing(route_steps[i-1], step)
+            location = step.start_location
+            action_locations.append({
+                'step_index': i,
+                'action': step.action,
+                'bearing_change': turn_bearing,
                 'location': location
             })
     return action_locations
@@ -111,8 +134,4 @@ def get_nearby_landmarks(location, radius=20):
     return points_of_interest
 
 
-
-##COMING SOON:
-##TO DO: FILTER LANDMARKS BASED ON BEARING FOR STEPS WITH ACTIONS (TURNS)
-
-
+#Add filter based on bearing change
