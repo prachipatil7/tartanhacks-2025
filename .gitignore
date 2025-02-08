@@ -214,6 +214,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+backend/tartan
 
 # Spyder project settings
 .spyderproject
