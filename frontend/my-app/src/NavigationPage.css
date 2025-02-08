@@ -23,4 +23,22 @@
     border: none;
     cursor: pointer;
   }
+
+
+  
+  .info {
+    padding: 10px 15px;
+    font-size: 1rem;
+    background: rgba(255, 105, 180, 0.8);  /* Semi-transparent pink background */
+    color: white;  /* White text */
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Optional: soft shadow */
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    opacity: 1;
+    z-index: 10;
+  }
+  
   
