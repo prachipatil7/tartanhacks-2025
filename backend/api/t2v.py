@@ -3,7 +3,8 @@ from google.cloud import texttospeech
 
 
 # Set up authentication
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/AnuranjanAnand/Downloads/google_credentials.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "REPLACE"
+
 
 def synthesize_text(text):
     """Synthesizes speech from the input string of text."""
@@ -20,7 +21,9 @@ def synthesize_text(text):
         ssml_gender=texttospeech.SsmlVoiceGender.FEMALE,
     )
 
-    audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3)
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.MP3
+    )
 
     response = client.synthesize_speech(
         request={"input": input_text, "voice": voice, "audio_config": audio_config}
@@ -33,12 +36,13 @@ def synthesize_text(text):
         return
 
     # Save output
-    output_path = "/Users/AnuranjanAnand/tartanhacks-2025/files/output.mp3"
-    with open(output_path, "wb") as out:
-        out.write(response.audio_content)
-        print(f'Audio content written to file: {output_path}')
-   
+    # output_path = "/Users/AnuranjanAnand/tartanhacks-2025/files/output.mp3"
+    # with open(output_path, "wb") as out:
+    #     out.write(response.audio_content)
+    #     print(f"Audio content written to file: {output_path}")
+
     return response.audio_content
+
 
 if __name__ == "__main__":
     synthesize_text()

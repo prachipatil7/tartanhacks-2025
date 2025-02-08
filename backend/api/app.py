@@ -44,14 +44,14 @@ async def handle_destination(data: TripStatus):
     )
 
 
-# Run the application with: uvicorn app:app --reload
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:
         data = await websocket.receive_text()
         response = process_user_speech(data)
-        await websocket.send_text(response)
+        sound_bytes = synthesize_text(response)
+        await websocket.send_bytes(sound_bytes)
 
 
 @app.websocket("/navigation")
