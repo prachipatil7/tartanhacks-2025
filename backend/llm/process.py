@@ -130,8 +130,8 @@ tools = [
 
 
 def add_stop(keyword=None, location_type=None, status=None):
-    status.add_stop(keyword, location_type)
-    return "added the following to route"
+    name = status.add_stop(keyword, location_type)
+    return "added the following stop to route: " + name
 
 
 tool_dict = {"add_stop": add_stop}
