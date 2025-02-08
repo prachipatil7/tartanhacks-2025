@@ -1,6 +1,229 @@
-import React, { useState, useEffect } from "react";
-import { GoogleMap, Autocomplete, DirectionsRenderer } from "@react-google-maps/api";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { GoogleMap, Autocomplete, DirectionsRenderer, Marker } from "@react-google-maps/api";
 import { LoadScript } from "@react-google-maps/api";
+
+// Define the custom style object at the top of your file
+const mapStyles = [
+    {
+        "featureType": "administrative",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#eae6e7"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape.man_made",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#eaeaea"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape.man_made",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "color": "#e0dede"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#e0e0e0"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#d6caca"
+            },
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "labels.icon",
+        "stylers": [
+            {
+                "color": "#f6c6dc"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.attraction",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.business",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.government",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.medical",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.park",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.place_of_worship",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.school",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#f6c6dc"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#f6c6dc"
+            },
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    },
+    {
+        "featureType": "transit",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    },
+    {
+        "featureType": "transit",
+        "elementType": "labels.icon",
+        "stylers": [
+            {
+                "hue": "#ff0000"
+            },
+            {
+                "saturation": "-100"
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#613659"
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0c2d64"
+            }
+        ]
+    }
+]
 
 const mapContainerStyle = {
   width: "100vw",
@@ -9,13 +232,26 @@ const mapContainerStyle = {
 
 const NavigationPage = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
-  const [startAddress, setStartAddress] = useState("");  // Store formatted start address
+  const [startAddress, setStartAddress] = useState("");
   const [destination, setDestination] = useState("");
   const [directions, setDirections] = useState(null);
   const [autocomplete, setAutocomplete] = useState(null);
+  const [eta, setEta] = useState(null);
+  const [distance, setDistance] = useState(null);
+  const [mapType, setMapType] = useState("roadmap");
+  const [navigationStarted, setNavigationStarted] = useState(false);
+  const [stops, setStops] = useState([]);
 
-  let socket;
-  let recognition;
+
+  const mapRef = useRef(null);
+  const intervalRef = useRef(null);
+  const prevLocationRef = useRef(null);
+
+  let socket, recognition;
+
+
+//   let socket;
+//   let recognition;
 
   function setupAudioCapture() {
     socket = new WebSocket("http://127.0.0.1:8000/ws");
@@ -65,34 +301,16 @@ const NavigationPage = () => {
     };
   }
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
 
-        setCurrentLocation({ lat, lng });
-
-        // Fetch the formatted address and update state
-        const formattedAddress = await getFormattedAddress(lat, lng);
-        setStartAddress(formattedAddress);
-      },
-      () => alert("Could not get location.")
-    );
-  }, []);
-
-  // Function to get formatted address from lat, lng
+  // Function to fetch a formatted address from latitude and longitude
   const getFormattedAddress = async (lat, lng) => {
     const API_KEY = "REPLACE"; // Replace with actual API Key
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`;
-
     try {
       const response = await fetch(url);
       const data = await response.json();
-
-      if (data.status === "OK") {
-        return data.results[0].formatted_address;
-      } else {
+      if (data.status === "OK") return data.results[0].formatted_address;
+      else {
         console.error("Geocoding API error:", data.status);
         return "Unknown Location";
       }
@@ -102,62 +320,8 @@ const NavigationPage = () => {
     }
   };
 
-  const handlePlaceSelect = () => {
-    if (autocomplete && autocomplete.getPlace()) {
-      setDestination(autocomplete.getPlace().formatted_address);
-    }
-  };
-
-  const startNavigation = async () => {
-    setupAudioCapture()
-    if (!currentLocation || !destination || !window.google) return;
-
-    // Ensure we have the formatted address before proceeding
-    let formattedAddress = startAddress;
-    if (!formattedAddress) {
-      formattedAddress = await getFormattedAddress(currentLocation.lat, currentLocation.lng);
-      setStartAddress(formattedAddress); // Save to state
-    }
-
-    const directionsService = new window.google.maps.DirectionsService();
-    directionsService.route(
-      {
-        origin: currentLocation,
-        destination: destination,
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      },
-      async (result, status) => {
-        if (status === "OK") {
-          setDirections(result);
-
-          // Extract navigation details with the correct address and modify to match schema
-          const navigationData = {
-            start: {
-              lat: currentLocation.lat,
-              lng: currentLocation.lng
-            },
-            dest: {
-              lat: result.routes[0].legs[0].end_location.lat(),
-              lng: result.routes[0].legs[0].end_location.lng(),
-              address: destination,
-              name: destination, // You can change this to something else if you want
-            },
-            duration: result.routes[0].legs[0].duration.text,
-            distance: result.routes[0].legs[0].distance.text
-          };
-
-          // Send data to backend API instead of saving a file
-          sendToBackend(navigationData);
-        } else {
-          console.error("Error fetching directions:", status);
-        }
-      }
-    );
-  };
-
-  // Function to send navigation data to the backend API
+  // Function to send navigation details to the backend
   const sendToBackend = async (data) => {
-    console.log(data)
     try {
       const response = await fetch("http://localhost:8000/destination", {
         method: "POST",
@@ -166,7 +330,7 @@ const NavigationPage = () => {
         },
         body: JSON.stringify(data),
       });
-      console.log(response)
+
       if (!response.ok) {
         throw new Error("Failed to send data to backend");
       }
@@ -178,14 +342,171 @@ const NavigationPage = () => {
     }
   };
 
+  // Watch geolocation to update current location and address
+  useEffect(() => {
+    if (navigator.geolocation) {
+      const watchId = navigator.geolocation.watchPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          const newLocation = { lat: latitude, lng: longitude };
+          setCurrentLocation(newLocation);
+
+          if (!prevLocationRef.current) {
+            const formattedAddress = await getFormattedAddress(latitude, longitude);
+            setStartAddress(formattedAddress);
+          }
+
+          prevLocationRef.current = newLocation;
+
+          if (mapRef.current) {
+            mapRef.current.panTo(newLocation);
+          }
+        },
+        () => alert("Could not get location."),
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+      );
+      return () => navigator.geolocation.clearWatch(watchId);
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  }, []);
+
+  // Handle place selection from Autocomplete
+  const handlePlaceSelect = () => {
+    if (autocomplete && autocomplete.getPlace()) {
+      setDestination(autocomplete.getPlace().formatted_address);
+    }
+  };
+
+//   const addStop = () => {
+//     setStops([...stops, ""]);
+//   };
+
+//     // Updates the value of a specific stop based on user input
+//    const handleStopChange = (e, index) => {
+//     const newStops = [...stops];
+//     newStops[index] = e.target.value;
+//     setStops(newStops);
+//     };
+
+  // Start navigation: fetch directions and send details to backend
+  const startNavigation = async () => {
+    if (!currentLocation || !destination || !window.google) return;
+
+    let formattedAddress = startAddress;
+    if (!formattedAddress) {
+      formattedAddress = await getFormattedAddress(currentLocation.lat, currentLocation.lng);
+      setStartAddress(formattedAddress);
+    }
+
+    setNavigationStarted(true);
+
+    const directionsService = new window.google.maps.DirectionsService();
+    const updateRoute = () => {
+      directionsService.route(
+        {
+          origin: currentLocation,
+          destination: destination,
+          travelMode: window.google.maps.TravelMode.DRIVING,
+        },
+        (result, status) => {
+          if (status === "OK") {
+            setDirections(result);
+            const routeLeg = result.routes[0].legs[0];
+            setEta(routeLeg.duration.text);
+            setDistance(routeLeg.distance.text);
+
+            // Prepare navigation data to send to the backend
+            const navigationData = {
+              start: {
+                lat: currentLocation.lat,
+                long: currentLocation.lng,
+                address: startAddress,
+              },
+              dest: {
+                address: destination,
+                lat: routeLeg.end_location.lat(),
+                long: routeLeg.end_location.lng(),
+                name: destination,
+              },
+              duration: routeLeg.duration.text,
+              distance: routeLeg.distance.text,
+            };
+
+            sendToBackend(navigationData);
+          } else {
+            console.error("Error fetching directions:", status);
+          }
+        }
+      );
+    };
+
+    intervalRef.current = setInterval(updateRoute, 3000); // Update route every 3 seconds
+  };
+
+  // Cleanup the route update interval when the component unmounts
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  // Get the custom car icon
+  const getCarIcon = useCallback(() => {
+    if (
+      window.google &&
+      window.google.maps &&
+      typeof window.google.maps.Size === "function" &&
+      typeof window.google.maps.Point === "function"
+    ) {
+      return {
+        url: "/media/car-steering-wheel-svgrepo-com.svg",
+        //url: "/media/car.svg", // Path to your pink car icon
+        scaledSize: new window.google.maps.Size(40, 40),
+        anchor: new window.google.maps.Point(20, 20),
+      };
+    }
+    return null;
+  }, []);
+
+  // Toggle between roadmap and satellite views
+  const toggleMapType = () => {
+    const newMapType = mapType === "roadmap" ? "satellite" : "roadmap";
+    setMapType(newMapType);
+    if (mapRef.current) {
+      mapRef.current.setOptions({ mapTypeId: newMapType });
+    }
+  };
+
   return (
-    //THIS IS WHERE YOU ADD THE API KEY  <LoadScript googleMapsApiKey="XXXXXXXXXX" libraries={["places"]}> 
     <LoadScript googleMapsApiKey="REPLACE" libraries={["places"]}>
-      <GoogleMap mapContainerStyle={mapContainerStyle} zoom={14} center={currentLocation}>
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        zoom={14}
+        // options={{
+        //     styles: mapStyles,  // Apply custom styles here
+        //   }}
+        center={currentLocation}
+        options={{ mapTypeId: mapType, styles: mapStyles, minZoom: 1, maxZoom: 20, }}
+        onLoad={(map) => {
+          mapRef.current = map;
+        }}
+        
+      >
         {directions && <DirectionsRenderer directions={directions} />}
+        {navigationStarted && currentLocation && getCarIcon() && (
+          <Marker position={currentLocation}             icon={{
+            // Instead of an image, use a CSS animated div
+            url: "/media/car-steering-wheel-svgrepo-com.svg",
+            //url: "/media/car.svg", // Path to your pink car icon
+            scaledSize: new window.google.maps.Size(40, 40),
+            anchor: new window.google.maps.Point(20, 20),
+          }}
+        />
+        )}
       </GoogleMap>
 
-      <div className="controls">
+      <div className="controls" style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)" }}>
         <Autocomplete onLoad={(auto) => setAutocomplete(auto)} onPlaceChanged={handlePlaceSelect}>
           <input
             type="text"
@@ -195,9 +516,37 @@ const NavigationPage = () => {
           />
         </Autocomplete>
         <button onClick={startNavigation}>Start Navigation</button>
+        <button onClick={toggleMapType}>Toggle Map Type ({mapType})</button>
       </div>
+
+      {/* Display ETA and Distance */}
+      {eta && distance && (
+  <div className="info" style={{
+    position: "absolute", bottom: "20px", left: "50%", transform: "translateX(-50%)",
+    background: "white", color: "black", fontWeight: "bold",
+    padding: "10px", borderRadius: "8px", boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+    fontSize: "16px", textAlign: "center", minWidth: "150px",
+    userSelect: "none"  // ✅ Prevents accidental text selection
+  }}>
+    <p><strong>ETA:</strong> {eta}</p>
+    <p><strong>Distance:</strong> {distance}</p>
+  </div>
+)}
+
+      {/* {eta && distance && (
+        <div className="info" style={{
+          position: "absolute", bottom: "20px", left: "50%", transform: "translateX(-50%)",
+          background: "white", color: "black", fontWeight: "bold",
+          padding: "10px", borderRadius: "8px", boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+          fontSize: "16px", textAlign: "center", minWidth: "150px"
+        }}>
+          <p><strong>ETA:</strong> {eta}</p>
+          <p><strong>Distance:</strong> {distance}</p>
+        </div>
+      )} */}
     </LoadScript>
   );
 };
 
 export default NavigationPage;
+

@@ -21,3 +21,5 @@ def process_user_speech(text: str, status):
     response_text = completion.choices[0].message
     # print(response_text)
     return remove_emojis(response_text.content)
+
+
